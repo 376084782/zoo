@@ -2,6 +2,12 @@ import Util from "../Util";
 import socketManager from "..";
 import _ from "lodash";
 import PROTOCLE from "../config/PROTOCLE";
+import { HOLE_COUNT } from "../config";
+import Hole from "./Hole";
+import ModelConfig from "../../models/ModelConfig";
+import ModelConfigRoom from "../../models/ModelConfigRoom";
+import ModelUser from "../../models/ModelUser";
+import ModelAnimalType from "../../models/ModelAnimalType";
 // 游戏内玩家全部离线的房间，自动清除
 export default class RoomManager {
   // 房间等级
@@ -9,56 +15,107 @@ export default class RoomManager {
   roomId = 0;
   isPublic = true;
   // 存当前在游戏中的uid列表
-  uidList = [];
+  get uidList() {
+    return this.userList.map(e => e.uid);
+  }
+  userList = [];
+  holeList: Hole[] = []
+
   constructor({ level }) {
     this.roomId = Util.getUniqId();
     this.level = level;
+    this.initHoles()
+  }
+
+  async doClickHole(uid, typeAnimal) {
+    let { P, PG, ZG, userInfo } = await Util.getConfig(uid, this.level);
+    let win = 0;
+    let flag = Math.random() < P;
+    let cost = Math.floor(PG);
+    if (flag) {
+      let configAnimal = await ModelAnimalType.findOne({ id: typeAnimal });
+      win = Math.floor(configAnimal.mult * ZG)
+    }
+    userInfo.coin += (win - cost)
+    userInfo.gainTotal += (win - cost)
+    let res = await ModelUser.updateOne({ uid }, {
+      coin: userInfo.coin,
+      gainTotal: userInfo.gainTotal
+    });
+    let userInGame = this.userList.find(e => e.uid == uid);
+    if (userInGame) {
+      userInGame.coin = userInfo.coin;
+      userInGame.gainTotal = userInfo.gainTotal;
+      socketManager.sendMsgByUidList(this.uidList, PROTOCLE.SERVER.ROOM_USER_UPDATE, {
+        userList: this.userList
+      });
+    }
+    return { flag, cost, win, userInfo }
+
+  }
+  initHoles() {
+    for (let i = 0; i < HOLE_COUNT; i++) {
+      let ctr = new Hole();
+      ctr.idx = i;
+      ctr.roomCtr = this;
+      this.holeList.push(ctr);
+    }
   }
 
   // 玩家离开
   leave(uid) {
-    let userCtr = socketManager.getUserCtrById(uid);
-    this.uidList = this.uidList.filter(uid1 => uid1 != uid);
+    socketManager.sendMsgByUidList([uid], PROTOCLE.SERVER.GO_HALL, {});
+    this.userList = this.userList.filter(user => user.uid != uid);
     socketManager.sendMsgByUidList(this.uidList, PROTOCLE.SERVER.ROOM_USER_UPDATE, {
-      userList: this.getUserDataList()
+      userList: this.userList
     });
-
-    userCtr.inRoomId = 0;
-    userCtr.updateToClient();
   }
   // 玩家加入
-  join(uid) {
-    if (this.uidList.indexOf(uid) > -1) {
-      socketManager.sendErrByUidList([uid], "match", {
+  join(userInfo) {
+    if (this.uidList.indexOf(userInfo.uid) > -1) {
+      socketManager.sendErrByUidList([userInfo.uid], "match", {
         msg: "玩家已经在房间内"
       });
       return
     }
-    let userCtr = socketManager.getUserCtrById(uid);
 
-    this.uidList.push(uid);
+    this.userList.push(userInfo);
     socketManager.sendMsgByUidList(this.uidList, PROTOCLE.SERVER.ROOM_USER_UPDATE, {
-      userList: this.getUserDataList()
+      userList: this.userList
     });
-
-    userCtr.inRoomId = this.roomId;
-    userCtr.updateToClient();
-  }
-  getUserDataList() {
-    let userDataList = [];
-    this.uidList.forEach(uid => {
-      userDataList.push(socketManager.getUserInfoById(uid));
+    socketManager.sendMsgByUidList([userInfo.uid],
+      PROTOCLE.SERVER.GO_GAME, {
+      dataGame: this.getRoomInfo(userInfo.uid)
     });
-    return userDataList;
+  }
+  clickHole(uid, holeId) {
+    if (this.checkInRoom(uid)) {
+      let hole = this.holeList.find((hole: Hole) => hole.idx == holeId);
+      if (hole) {
+        hole.doClick(uid)
+      }
+    }
   }
 
-
+  checkInRoom(uid) {
+    return this.uidList.indexOf(uid) > -1;
+  }
   // 获取全服房间内游戏数据
   getRoomInfo(uid) {
+    let listHole = [];
+    this.holeList.forEach((ctr: Hole) => {
+      listHole.push({
+        isOut: ctr.isOut,
+        idx: ctr.idx,
+        type: ctr.type
+      })
+    })
     let info: any = {
       isInRoom: true,
-      gameInfo: {},
-      userList: this.getUserDataList(),
+      gameInfo: {
+        listHole,
+        listUser: this.userList
+      },
     };
     return info;
   }

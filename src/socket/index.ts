@@ -1,15 +1,14 @@
 import RoomManager from "./controller/RoomManager";
 import PROTOCLE from "./config/PROTOCLE";
-import UserManager from "./controller/UserManager";
 import { PEOPLE_EACH_GAME_MAX } from "./config";
 import Util from "./Util";
 import RobotManager from "./controller/RobotManager";
+import ModelUser from "../models/ModelUser";
 
 
 export default class socketManager {
   static io;
   static userSockets = {};
-  static userMap: UserManager[] = [];
   static aliveRoomList: RoomManager[] = [];
   static getRoomCanJoin({ level }): RoomManager {
     // 检查当前已存在的房间中 公开的，人未满的,未开始游戏的
@@ -48,45 +47,15 @@ export default class socketManager {
       }
     });
   }
-  static initRobot() {
-    this.userMap = [];
-    RobotManager.listName.forEach((name, i) => {
-      let uid = 10000000000000 + i
-      this.userMap[uid] = new UserManager({
-        avatar: `https://oss.yipeng.online/avatar/图片${i + 1}.jpg`,
-        nickname: name,
-        uid,
-        sex: 1,
-        score: Util.getRandomInt(1000, 4000),
-        isRobot: true
-      })
-    })
-  }
   static init(io) {
     // console.log('======初始化io======')
     this.io = io;
-    this.initRobot()
     this.listen();
 
   }
-  static getUserCtrById(uid) {
-    if (!this.userMap[uid]) {
-      this.userMap[uid] = new UserManager({
-        avatar:
-          "https://shebz.oss-cn-qingdao.aliyuncs.com/shebz/cb6c5c121bea4ef591660087f48f9f53494030.png",
-        nickname: "机器人" + uid,
-        uid,
-        sex: 1,
-        score: Util.getRandomInt(1000, 4000),
-        isRobot: true
-      });
-    }
-    let ctrUser = this.userMap[uid];
-    return ctrUser;
-  }
-  static getUserInfoById(uid) {
-    let ctr = this.getUserCtrById(uid);
-    return ctr.getInfo();
+  static getInRoomByUid(uid) {
+    let ctrRoom = this.aliveRoomList.find(ctr => ctr.uidList.indexOf(uid) > -1)
+    return ctrRoom && ctrRoom.roomId;
   }
   static listen() {
     this.io.on("connect", this.onConnect);
@@ -96,15 +65,29 @@ export default class socketManager {
       return this.aliveRoomList.find(roomCtr => roomCtr.roomId == roomId);
     }
   }
-  static onMessage(res, socket) {
-    console.log("收到消息", res);
+  static async onMessage(res, socket) {
+    // console.log("收到消息", res);
     // 公共头
     let uid = res.uid;
     if (!uid) {
       return;
     }
-    if (!this.userMap[uid]) {
-      this.userMap[uid] = new UserManager(res.userInfo);
+    let modelUser = await ModelUser.findOne({ uid: uid })
+    let userInfo = {
+      uid: uid,
+      nickname: '测试玩家' + uid,
+      avatar: '',
+      coin: 0
+    }
+    if (modelUser) {
+      userInfo = {
+        nickname: modelUser.nickname,
+        uid: modelUser.uid,
+        avatar: modelUser.avatar,
+        coin: modelUser.coin
+      }
+    } else {
+      await ModelUser.create(userInfo);
     }
     let data = res.data;
     let type = res.type;
@@ -116,12 +99,8 @@ export default class socketManager {
     }
     this.userSockets[uid] = socket;
 
-    let userCtr = this.getUserCtrById(uid);
-    let roomId = userCtr.inRoomId;
+    let roomId = this.getInRoomByUid(uid);
     let roomCtr = this.getRoomCtrByRoomId(roomId);
-    if (roomCtr) {
-      console.log(roomCtr.roomId, "roomId");
-    }
 
     switch (type) {
       case PROTOCLE.CLIENT.EXIT: {
@@ -135,13 +114,12 @@ export default class socketManager {
         let dataGame: any = {
           isMatch: data.isMatch
         };
-        let userInfo = userCtr.getInfo();
 
-        if (userCtr.inRoomId && roomCtr) {
+        if (roomCtr) {
           // 获取游戏数据并返回
           dataGame = roomCtr.getRoomInfo(uid);
         }
-        this.sendMsgByUidList([userCtr.uid], PROTOCLE.SERVER.RECONNECT, {
+        this.sendMsgByUidList([uid], PROTOCLE.SERVER.RECONNECT, {
           userInfo: userInfo,
           dataGame
         });
@@ -152,7 +130,7 @@ export default class socketManager {
         let { level, flag } = data;
         if (flag) {
           if (roomCtr && roomCtr.roomId != 0) {
-            this.sendErrByUidList([userCtr.uid], PROTOCLE.CLIENT.MATCH, {
+            this.sendErrByUidList([uid], PROTOCLE.CLIENT.MATCH, {
               msg: "已经处于游戏中，无法匹配"
             });
             return;
@@ -161,7 +139,7 @@ export default class socketManager {
           let targetRoom: RoomManager;
           targetRoom = this.getRoomCanJoin({ level });
 
-          targetRoom.join(uid);
+          targetRoom.join(userInfo);
         } else {
           if (!roomCtr) {
             return;
@@ -177,6 +155,12 @@ export default class socketManager {
         });
         break;
       }
+      case PROTOCLE.CLIENT.HIT: {
+        if (roomCtr) {
+          roomCtr.clickHole(uid, data.idx);
+        }
+        break
+      }
     }
   }
   static onDisconnect(socket) {
@@ -185,12 +169,10 @@ export default class socketManager {
       if (this.userSockets[uid] == socket) {
         console.log('用户uid掉线,取消匹配')
         // 踢出用户
-        let userCtr = this.getUserCtrById(uid);
-        let roomId = userCtr.inRoomId;
+        let roomId = this.getInRoomByUid(uid);
         let roomCtr = this.getRoomCtrByRoomId(roomId);
         if (roomCtr) {
           roomCtr.leave(uid);
-          userCtr.inRoomId = 0;
         }
       }
     }
@@ -200,7 +182,6 @@ export default class socketManager {
       socketManager.onDisconnect(socket)
     });
     socket.on("message", res => {
-      console.log(this.onMessage);
       socketManager.onMessage(res, socket);
     });
   }
