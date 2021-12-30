@@ -8,7 +8,7 @@ let ModelAnimaType = new Schema({
   // id
   id: { type: Number, default: 0 },
   // 出现的权重
-  power: { type: Number, default: 0 },
+  power: { type: Number, default: 1 },
 
 })
 export default model('animalType', ModelAnimaType);

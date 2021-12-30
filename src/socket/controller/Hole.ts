@@ -1,4 +1,5 @@
 import socketManager from "..";
+import ModelAnimalType from "../../models/ModelAnimalType";
 import { PL, TO } from "../config";
 import PROTOCLE from "../config/PROTOCLE";
 import Util from "../Util";
@@ -21,9 +22,17 @@ export default class Hole {
     }, time);
   }
   timer = null;
-  doOut() {
+  async doOut() {
     clearTimeout(this.timer);
-    this.type = Util.getRandomInt(1, 5);
+    let list = await ModelAnimalType.find({});
+    let listTarget = [];
+    list.forEach(conf => {
+      for (let i = 0; i < conf.power; i++) {
+        listTarget.push(conf.id);
+      }
+    })
+    let i = Util.getRandomInt(1, listTarget.length);
+    this.type = listTarget[i];
     this.isOut = true;
     socketManager.sendMsgByUidList(this.roomCtr.uidList, PROTOCLE.SERVER.HOLE_UP, { type: this.type, idx: this.idx })
     this.doTimer(() => {

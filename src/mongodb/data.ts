@@ -82,9 +82,9 @@ async function initUser() {
 }
 
 const createData = async () => {
-  await initRoomConfig();
-  await initAnimal();
-  await initConfigBasic();
-  await initUser()
+  // await initRoomConfig();
+  // await initAnimal();
+  // await initConfigBasic();
+  // await initUser()
 }
 export { createData }
