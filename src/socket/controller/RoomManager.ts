@@ -113,6 +113,7 @@ export default class RoomManager {
     let info: any = {
       isInRoom: true,
       gameInfo: {
+        level: this.level,
         listHole,
         listUser: this.userList
       },
