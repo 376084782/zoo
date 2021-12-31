@@ -29,11 +29,10 @@ export default class Util {
       BP = configBasic.BP;
     }
 
-    let P = (PA / ZH) * 100 + TP + RP + AP + BP;
+    let P = ((PA / ZH) * 100 + TP + RP + AP + BP)/100;
     if (P < 0) {
       P = 0
     }
-    P /= 100
     let IR = (PG / ZG) * (1 / P);
     return {
       PA, ZH, TP, RP, BP, P, IR, PG, ZG, AP, userInfo: {
