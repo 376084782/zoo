@@ -22,14 +22,14 @@ export default class Util {
       let biggerThanMin = configAP.min == null || userInfo.gainTotal >= configAP.min;
       let smallerThanMax = configAP.max == null || userInfo.gainTotal < configAP.max;
       if (smallerThanMax && biggerThanMin) {
-        AP = configAP.AP;
+        AP = + configAP.AP;
       }
     }
     if (userInfo.isInBlackRoom) {
       BP = configBasic.BP;
     }
 
-    let P = ((PA / ZH) * 100 + TP + RP + AP + BP)/100;
+    let P = ((PA / ZH) * 100 + TP + RP + AP + BP) / 100;
     if (P < 0) {
       P = 0
     }
