@@ -5,6 +5,7 @@ import ModelAnimalType from "../models/ModelAnimalType";
 import ModelUser from "../models/ModelUser";
 import ModelConfig from "../models/ModelConfig";
 import ModelConfigRoom from "../models/ModelConfigRoom";
+import ModelWeapon from "../models/ModelWeapon";
 
 var express = require("express");
 var router = express.Router();
@@ -18,8 +19,6 @@ router.post("/room/save", async (req, res, next) => {
     }
     await ModelConfigRoom.updateOne({ id: confEach.id }, {
       RP: confEach.RP,
-      PG: confEach.PG,
-      ZG: confEach.ZG,
       AP: confEach.AP
     });
   }
@@ -28,7 +27,7 @@ router.post("/room/save", async (req, res, next) => {
 router.get("/room/list", async (req, res, next) => {
   let data = req.query;
   let conf: any = await ModelConfigRoom.find({});
-  res.send(conf);
+  res.send({ code: 0, data: conf });
 });
 router.get("/config/basic", async (req, res, next) => {
   let data = req.query;
@@ -55,7 +54,7 @@ router.get("/user/list", async (req, res, next) => {
 router.get("/animal/list", async (req, res, next) => {
   let data = req.query;
   let list: any = await ModelAnimalType.find({});
-  res.send(list);
+  res.send({ code: 0, data: list });
 });
 router.post("/animal/update", async (req, res, next) => {
   let data = req.body;
@@ -75,6 +74,21 @@ router.get("/config", async (req, res, next) => {
     code: 0,
     data: result
   });
+});
+router.get("/weapon/list", async (req, res, next) => {
+  let data = req.query;
+  let list: any = []
+  if (data.roomId != undefined) {
+    list = await ModelWeapon.find({ roomId: data.roomId });
+  } else {
+    list = await ModelWeapon.find({});
+  }
+  res.send({ code: 0, data: list });
+});
+router.post("/weapon/update", async (req, res, next) => {
+  let data = req.body;
+  await ModelWeapon.updateOne({ roomId: data.roomId, type: data.type }, data);
+  res.send({ code: 0 });
 });
 
 module.exports = router;

@@ -1,6 +1,6 @@
 import socketManager from "..";
 import ModelAnimalType from "../../models/ModelAnimalType";
-import { PL, TO } from "../config";
+import ModelConfig from "../../models/ModelConfig";
 import PROTOCLE from "../config/PROTOCLE";
 import Util from "../Util";
 import RoomManager from "./RoomManager";
@@ -11,9 +11,11 @@ export default class Hole {
   idx = 0;
   type = 0;
   constructor() {
-    this.doTimer(() => {
-      this.doOut()
-    }, PL * Math.random());
+    ModelConfig.findOne({}).then(configBasic => {
+      this.doTimer(() => {
+        this.doOut()
+      }, configBasic.PL * Math.random());
+    })
   }
   doTimer(func, time,) {
     clearTimeout(this.timer);
@@ -23,11 +25,12 @@ export default class Hole {
   }
   timer = null;
   async doOut() {
+    let configBasic = await ModelConfig.findOne({});
     clearTimeout(this.timer);
     let list = await ModelAnimalType.find({});
     let listTarget = [];
     list.forEach(conf => {
-      for (let i = 0; i < conf.power; i++) {
+      for (let i = 0; i <= conf.power; i++) {
         listTarget.push(conf.id);
       }
     })
@@ -37,28 +40,29 @@ export default class Hole {
     socketManager.sendMsgByUidList(this.roomCtr.uidList, PROTOCLE.SERVER.HOLE_UP, { type: this.type, idx: this.idx })
     this.doTimer(() => {
       this.doDown()
-    }, TO);
+    }, configBasic.TO);
   }
-  doDown() {
+  async doDown(reason = 0) {
+    let configBasic = await ModelConfig.findOne({});
     clearTimeout(this.timer);
     this.isOut = false;
-    socketManager.sendMsgByUidList(this.roomCtr.uidList, PROTOCLE.SERVER.HOLE_DOWN, { idx: this.idx })
+    socketManager.sendMsgByUidList(this.roomCtr.uidList, PROTOCLE.SERVER.HOLE_DOWN, { idx: this.idx, reason })
     this.doTimer(() => {
       this.doOut()
-    }, PL * (1 + .5 * Math.random()))
+    }, configBasic.PL * (1 + .5 * Math.random()))
   }
-  async doClick(uid) {
+  async doClick(uid, confWeapon) {
     if (!this.isOut) {
       return
     }
-    let { flag, cost, win } = await this.roomCtr.doClickHole(uid, this.type);
+    let { flag, cost, win } = await this.roomCtr.doClickHole(uid, this.type, confWeapon);
     socketManager.sendMsgByUidList(this.roomCtr.uidList, PROTOCLE.SERVER.HIT_COST, {
       uid,
       cost: cost,
-      idx: this.idx,
+      idx: this.idx, confWeapon
     })
     if (flag) {
-      this.doDown()
+      this.doDown(1)
       socketManager.sendMsgByUidList(this.roomCtr.uidList,
         PROTOCLE.SERVER.HIT_RESULT,
         {

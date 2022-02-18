@@ -14,8 +14,9 @@ export default class Util {
     let ZH = configBasic.ZH;
     let TP = configBasic.TP;
     let RP = configRoom.RP;
-    let PG = configRoom.PG;
-    let ZG = configRoom.ZG;
+    let RB = configRoom.RB;
+    let DWGC = configRoom.diviseWeaponGainAndCost;
+    let diviseWeaponGainAndCost = configRoom.diviseWeaponGainAndCost;
     let BP = 0;
     for (let i = 0; i < listAP.length; i++) {
       let configAP = listAP[i];
@@ -33,9 +34,9 @@ export default class Util {
     if (P < 0) {
       P = 0
     }
-    let IR = (PG / ZG) * (1 / P);
+    let IR = (1 / DWGC) * (1 / P);
     return {
-      PA, ZH, TP, RP, BP, P, IR, PG, ZG, AP, userInfo: {
+      RB,PA, ZH, TP, RP, BP, P, IR, AP, diviseWeaponGainAndCost, userInfo: {
         coin: userInfo.coin,
         gainTotal: userInfo.gainTotal,
         isInBlackRoom: userInfo.isInBlackRoom,

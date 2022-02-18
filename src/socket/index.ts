@@ -157,7 +157,7 @@ export default class socketManager {
       }
       case PROTOCLE.CLIENT.HIT: {
         if (roomCtr) {
-          roomCtr.clickHole(uid, data.idx);
+          roomCtr.clickHole(uid, data.idx, data.conf);
         }
         break
       }

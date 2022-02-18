@@ -27,14 +27,14 @@ export default class RoomManager {
     this.initHoles()
   }
 
-  async doClickHole(uid, typeAnimal) {
-    let { P, PG, ZG, userInfo } = await Util.getConfig(uid, this.level);
+  async doClickHole(uid, typeAnimal, confWeapon) {
+    let { P, RB, userInfo, diviseWeaponGainAndCost } = await Util.getConfig(uid, this.level);
     let win = 0;
     let flag = Math.random() < P;
-    let cost = Math.floor(PG);
+    let configAnimal = await ModelAnimalType.findOne({ id: typeAnimal });
+    let cost = Math.floor(configAnimal.mult * confWeapon.mult * RB);
     if (flag) {
-      let configAnimal = await ModelAnimalType.findOne({ id: typeAnimal });
-      win = Math.floor(configAnimal.mult * ZG)
+      win = Math.floor(cost * diviseWeaponGainAndCost)
     }
     userInfo.coin += (win - cost)
     userInfo.gainTotal += (win - cost)
@@ -88,11 +88,11 @@ export default class RoomManager {
       dataGame: this.getRoomInfo(userInfo.uid)
     });
   }
-  clickHole(uid, holeId) {
+  clickHole(uid, holeId, confWeapon) {
     if (this.checkInRoom(uid)) {
       let hole = this.holeList.find((hole: Hole) => hole.idx == holeId);
       if (hole) {
-        hole.doClick(uid)
+        hole.doClick(uid, confWeapon)
       }
     }
   }
