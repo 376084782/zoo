@@ -7,6 +7,7 @@ import ModelUser from "../models/ModelUser";
 
 
 export default class socketManager {
+  static isTest = false;
   static io;
   static userSockets = {};
   static aliveRoomList: RoomManager[] = [];

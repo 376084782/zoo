@@ -1,14 +1,22 @@
 'use strict';
 
 import * as mongoose from 'mongoose';
+import socketManager from '../socket';
 import { createData } from './data'
 
 export const doConnectMongo = () => {
   return new Promise((rsv, rej) => {
-
-    mongoose.connect('mongodb://127.0.0.1:27017/', {
-      dbName: 'zoo'
-    });
+    if (socketManager.isTest) {
+      mongoose.connect('mongodb://127.0.0.1:27017/', {
+        dbName: 'zoo',
+      });
+    } else {
+      mongoose.connect('mongodb://127.0.0.1:27017/', {
+        dbName: 'zoo',
+        user: 'root',
+        pass: 'Test15259980589'
+      });
+    }
     const db = mongoose.connection;
 
     db.once('open', async () => {
