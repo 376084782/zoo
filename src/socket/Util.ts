@@ -4,14 +4,28 @@ import ModelConfigRoom from "../models/ModelConfigRoom";
 import ModelUser from "../models/ModelUser";
 import ModelAnimalType from "../models/ModelAnimalType";
 export default class Util {
-  static async getConfig(uid, roomLev) {
+  static async getConfig(uid, roomLev, typeAnimal) {
     let configBasic = await ModelConfig.findOne({});
+    let ZH = 0;
+    if (typeAnimal) {
+      let configAnimal = await ModelAnimalType.findOne({ id: typeAnimal });
+      ZH = configAnimal.ZH;
+    } else {
+      // 整个动物配置表随机一个概率出来
+      let listAnimal = await ModelAnimalType.find();
+      let powerAll = 0;
+      let ZHAll = 0;
+      listAnimal.forEach(conf => {
+        powerAll += conf.power
+        ZHAll += conf.power * conf.ZH
+      })
+      ZH = ZHAll / powerAll
+    }
     let configRoom = await ModelConfigRoom.findOne({ id: roomLev });
     let userInfo = await ModelUser.findOne({ uid: uid });
     let listAP = JSON.parse(configRoom.AP);
     let AP = 0;
     let PA = configBasic.PA;
-    let ZH = configBasic.ZH;
     let TP = configBasic.TP;
     let RP = configRoom.RP;
     let RB = configRoom.RB;
@@ -36,7 +50,7 @@ export default class Util {
     }
     let IR = (1 / DWGC) * (1 / P);
     return {
-      RB,PA, ZH, TP, RP, BP, P, IR, AP, diviseWeaponGainAndCost, userInfo: {
+      RB, PA, ZH, TP, RP, BP, P, IR, AP, diviseWeaponGainAndCost, userInfo: {
         coin: userInfo.coin,
         gainTotal: userInfo.gainTotal,
         isInBlackRoom: userInfo.isInBlackRoom,

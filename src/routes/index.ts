@@ -6,6 +6,7 @@ import ModelUser from "../models/ModelUser";
 import ModelConfig from "../models/ModelConfig";
 import ModelConfigRoom from "../models/ModelConfigRoom";
 import ModelWeapon from "../models/ModelWeapon";
+import socketManager from "../socket";
 
 var express = require("express");
 var router = express.Router();
@@ -19,9 +20,18 @@ router.post("/room/save", async (req, res, next) => {
     }
     await ModelConfigRoom.updateOne({ id: confEach.id }, {
       RP: confEach.RP,
-      AP: confEach.AP
+      AP: confEach.AP,
+      diviseWeaponGainAndCost: confEach.diviseWeaponGainAndCost,
+      RCC: confEach.RCC,
+      RCB: confEach.RCB,
+      RCUD: confEach.RCUD,
+      RCCB: confEach.RCCB,
+      RCCUD: confEach.RCCUD,
+      RCHB: confEach.RCHB,
+      RCHUD: confEach.RCHUD,
     });
   }
+  socketManager.updateRoomConfig()
   res.send({ code: 0 });
 });
 router.get("/room/list", async (req, res, next) => {
@@ -42,7 +52,6 @@ router.post("/config/basic/edit", async (req, res, next) => {
     PL: data.PL,
     TO: data.TO,
     TP: data.TP,
-    ZH: data.ZH,
   });
   res.send({ code: 0 });
 });
@@ -69,7 +78,7 @@ router.post("/userinfo", async (req, res, next) => {
 
 router.get("/config", async (req, res, next) => {
   let data = req.query;
-  let result = (await Util.getConfig(data.uid, data.level)) as any;
+  let result = (await Util.getConfig(data.uid, data.level, 0)) as any;
   res.send({
     code: 0,
     data: result
@@ -88,6 +97,7 @@ router.get("/weapon/list", async (req, res, next) => {
 router.post("/weapon/update", async (req, res, next) => {
   let data = req.body;
   await ModelWeapon.updateOne({ roomId: data.roomId, type: data.type }, data);
+  socketManager.listWeapon = await ModelWeapon.find()
   res.send({ code: 0 });
 });
 

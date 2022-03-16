@@ -4,9 +4,13 @@ import { PEOPLE_EACH_GAME_MAX } from "./config";
 import Util from "./Util";
 import RobotManager from "./controller/RobotManager";
 import ModelUser from "../models/ModelUser";
+import ModelConfigRoom from "../models/ModelConfigRoom";
+import ModelWeapon from "../models/ModelWeapon";
 
 
 export default class socketManager {
+  static listWeapon: any[] = []
+  static listRoomConfig: any[] = []
   static isTest = true;
   static io;
   static userSockets = {};
@@ -26,6 +30,51 @@ export default class socketManager {
     } else {
       return list[0];
     }
+  }
+
+  static listRobot: RobotManager[] = [];
+  static async initRobots() {
+    this.listRoomConfig = await ModelConfigRoom.find();
+    this.listWeapon = await ModelWeapon.find()
+    let listRoom = this.listRoomConfig
+    listRoom.forEach(async (conf, m) => {
+      for (let i = 0; i < conf.RCC; i++) {
+        let userInfo = RobotManager.getRobotUser()
+        if (userInfo) {
+          let ctr = new RobotManager(conf.id, userInfo)
+          this.listRobot.push(ctr);
+        }
+      }
+    })
+  }
+  static async updateRoomConfig() {
+    this.listRoomConfig = await ModelConfigRoom.find();
+    this.listRoomConfig.forEach((room: any) => {
+      let listRobot = this.listRobot.filter((robot: RobotManager) => robot.lev == room.id)
+      let max = Math.max(room.RCC, listRobot.length);
+      for (let i = 0; i < max; i++) {
+        let r = listRobot[i];
+        if (i <= room.RCC) {
+          if (!r) {
+            // 加个机器人
+            let dataRobot = RobotManager.getRobotUser()
+            if (dataRobot) {
+              r = new RobotManager(room.id, dataRobot)
+              this.listRobot.push(r);
+            }
+          } else {
+            if (!r.isAlive) {
+              r.isAlive = true
+              r.autoCheckRoom()
+            }
+          }
+        } else {
+          if (r) {
+            r.isAlive = false
+          }
+        }
+      }
+    })
   }
   static removeRoom(room: RoomManager) {
     this.aliveRoomList = this.aliveRoomList.filter((ctr: RoomManager) => ctr != room);
@@ -52,7 +101,7 @@ export default class socketManager {
     // console.log('======初始化io======')
     this.io = io;
     this.listen();
-
+    this.initRobots()
   }
   static getInRoomByUid(uid) {
     let ctrRoom = this.aliveRoomList.find(ctr => ctr.uidList.indexOf(uid) > -1)

@@ -9,6 +9,7 @@ let ModelAnimaType = new Schema({
   id: { type: Number, default: 0 },
   // 出现的权重
   power: { type: Number, default: 1 },
-
+  // 动物生命
+  ZH: { type: Number, default: 0 },
 })
 export default model('animalType', ModelAnimaType);

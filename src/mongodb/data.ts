@@ -74,14 +74,14 @@ async function initRoomConfig() {
 
 async function initAnimal() {
   const configAnimal = [
-    { id: 1, name: '兔子', mult: 2.3, power: 1 },
-    { id: 2, name: '刺猬', mult: 3.3, power: 1 },
-    { id: 3, name: '熊猫', mult: 4.5, power: 1 },
-    { id: 4, name: '狗', mult: 8.4, power: 1 },
-    { id: 5, name: '狮子', mult: 8.4, power: 1 },
-    { id: 6, name: '猩猩', mult: 8.4, power: 1 },
-    { id: 7, name: '猫头鹰', mult: 8.4, power: 1 },
-    { id: 8, name: '老鼠', mult: 8.4, power: 1 },
+    { id: 1, name: '兔子', mult: 2.3, power: 1, ZH: 4 },
+    { id: 2, name: '刺猬', mult: 3.3, power: 1, ZH: 4 },
+    { id: 3, name: '熊猫', mult: 4.5, power: 1, ZH: 4 },
+    { id: 4, name: '狗', mult: 8.4, power: 1, ZH: 4 },
+    { id: 5, name: '狮子', mult: 8.4, power: 1, ZH: 4 },
+    { id: 6, name: '猩猩', mult: 8.4, power: 1, ZH: 4 },
+    { id: 7, name: '猫头鹰', mult: 8.4, power: 1, ZH: 4 },
+    { id: 8, name: '老鼠', mult: 8.4, power: 1, ZH: 4 },
   ];
   await ModelAnimalType.deleteMany();
   ModelAnimalType.create(configAnimal)
@@ -105,15 +105,42 @@ async function initUser() {
     { coin: 100000, gainTotal: -1000, uid: 114, nickname: '输一点', avatar: '' },
     { coin: 100000, gainTotal: -50000, uid: 115, nickname: '输很多', avatar: '' },
     { coin: 100000, gainTotal: -100000, uid: 116, nickname: '输狂多', avatar: '' },
+
+    {
+      uid: 10001,
+      nickname: 'robot1',
+      avatar: '',
+      coin: 10000000
+    }, {
+      uid: 10002,
+      nickname: 'robot2',
+      avatar: '',
+      coin: 10000000
+    }, {
+      uid: 10003,
+      nickname: 'robot3',
+      avatar: '',
+      coin: 10000000
+    }, {
+      uid: 10004,
+      nickname: 'robot4',
+      avatar: '',
+      coin: 10000000
+    }, {
+      uid: 10005,
+      nickname: 'robot5',
+      avatar: '',
+      coin: 10000000
+    }
   ];
   await ModelUser.deleteMany();
   ModelUser.create(listUser)
 }
 
 const createData = async () => {
-  await initRoomConfig();
-  await initAnimal();
-  await initConfigBasic();
+  // await initRoomConfig();
+  // await initAnimal();
+  // await initConfigBasic();
   await initUser()
 }
 export { createData }

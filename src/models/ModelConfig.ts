@@ -2,8 +2,6 @@ import { Schema, model } from 'mongoose';
 
 const ModelConfig = new Schema({
   // 子弹攻击
-  ZH: { type: Number, default: 0 },
-  // 动物生命
   PA: { type: Number, default: 0 },
   // 抽放水参数
   TP: { type: Number, default: 0 },
@@ -13,7 +11,6 @@ const ModelConfig = new Schema({
   PL: { type: Number, default: 0 },
   // 自动消失的时间
   TO: { type: Number, default: 0 },
-
 })
 
 export default model('config', ModelConfig);

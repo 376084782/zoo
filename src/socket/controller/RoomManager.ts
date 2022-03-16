@@ -28,7 +28,7 @@ export default class RoomManager {
   }
 
   async doClickHole(uid, typeAnimal, confWeapon) {
-    let { P, RB, userInfo, diviseWeaponGainAndCost } = await Util.getConfig(uid, this.level);
+    let { P, RB, userInfo, diviseWeaponGainAndCost } = await Util.getConfig(uid, this.level, typeAnimal);
     let win = 0;
     let flag = Math.random() < P;
     let configAnimal = await ModelAnimalType.findOne({ id: typeAnimal });
@@ -76,7 +76,7 @@ export default class RoomManager {
       socketManager.sendErrByUidList([userInfo.uid], "match", {
         msg: "玩家已经在房间内"
       });
-      return
+      return false
     }
 
     this.userList.push(userInfo);
@@ -87,6 +87,7 @@ export default class RoomManager {
       PROTOCLE.SERVER.GO_GAME, {
       dataGame: this.getRoomInfo(userInfo.uid)
     });
+    return true
   }
   clickHole(uid, holeId, confWeapon) {
     if (this.checkInRoom(uid)) {
