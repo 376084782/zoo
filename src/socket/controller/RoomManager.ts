@@ -34,7 +34,7 @@ export default class RoomManager {
     let configAnimal = await ModelAnimalType.findOne({ id: typeAnimal });
     let cost = Math.floor(confWeapon.mult * RB);
     if (flag) {
-      win = Math.floor(configAnimal.mult * confWeapon.mult * RB * diviseWeaponGainAndCost)
+      win = Math.floor(configAnimal.mult * confWeapon.mult * RB)
     }
     userInfo.coin += (win - cost)
     userInfo.gainTotal += (win - cost)
