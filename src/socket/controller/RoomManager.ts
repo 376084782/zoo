@@ -25,6 +25,27 @@ export default class RoomManager {
     this.roomId = Util.getUniqId();
     this.level = level;
     this.initHoles()
+    this.autoCrazy()
+  }
+  crazyTypeList = []
+  async autoCrazy() {
+    let configRoom = await ModelConfigRoom.findOne({ id: this.level });
+    setTimeout(async () => {
+      if (this.crazyTypeList.length == 0) {
+        let listTypeAll = await ModelAnimalType.find({});
+        this.crazyTypeList = listTypeAll
+      }
+      let i = Util.getRandomInt(0, this.crazyTypeList.length);
+      // 用过的动物排除
+      this.crazyTypeList.splice(i, 1)
+      let confType = this.crazyTypeList[i];
+      this.holeList.forEach((hole: Hole) => {
+        hole.doShowCrazy(configRoom.crazy_duration, confType.id)
+      })
+      setTimeout(() => {
+        this.autoCrazy()
+      }, configRoom.crazy_duration + 1000);
+    }, configRoom.crazy_delay);
   }
 
   async doClickHole(uid, typeAnimal, confWeapon) {
@@ -34,7 +55,7 @@ export default class RoomManager {
     let configAnimal = await ModelAnimalType.findOne({ id: typeAnimal });
     let cost = Math.floor(confWeapon.mult * RB);
     if (flag) {
-      win = Math.floor(configAnimal.mult * confWeapon.mult * RB)
+      win = Math.floor(configAnimal.mult * confWeapon.mult * RB * diviseWeaponGainAndCost)
     }
     userInfo.coin += (win - cost)
     userInfo.gainTotal += (win - cost)

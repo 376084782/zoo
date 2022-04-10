@@ -3,6 +3,8 @@ import { Schema, model } from 'mongoose';
 const ModelConfigRoom = new Schema({
   name: { type: String, default: '' },
   id: { type: Number, default: 0 },
+  crazy_delay: { type: Number, default: 10000 },
+  crazy_duration: { type: Number, default: 3000 },
   RP: { type: Number, default: 0 },
   AP: { type: String, default: "[]" },
   RB: { type: Number, default: 0 },
@@ -24,6 +26,7 @@ const ModelConfigRoom = new Schema({
   RCCB: { type: Number, default: 3 },
   // 机器人在每个房间打几次的次数浮动
   RCCUD: { type: Number, default: 2 },
+
 })
 
 export default model('configRoom', ModelConfigRoom);

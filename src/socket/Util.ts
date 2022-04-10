@@ -50,7 +50,8 @@ export default class Util {
     }
     let IR = (1 / DWGC) * (1 / P);
     return {
-      RB, PA, ZH, TP, RP, BP, P, IR, AP, diviseWeaponGainAndCost, userInfo: {
+      RB, PA, ZH, TP, RP, BP, P, IR, AP, diviseWeaponGainAndCost,
+      userInfo: {
         coin: userInfo.coin,
         gainTotal: userInfo.gainTotal,
         isInBlackRoom: userInfo.isInBlackRoom,

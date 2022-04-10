@@ -11,11 +11,26 @@ export default class Hole {
   idx = 0;
   type = 0;
   constructor() {
+    this.initShow()
+  }
+  initShow() {
     ModelConfig.findOne({}).then(configBasic => {
       this.doTimer(() => {
         this.doOut()
       }, configBasic.PL * Math.random());
     })
+  }
+  doShowCrazy(duration, idAniType) {
+    this.doDown(0, false);
+    setTimeout(() => {
+      this.doOut(false, idAniType);
+      setTimeout(() => {
+        this.doDown(0, false);
+        setTimeout(() => {
+          this.initShow()
+        }, 500);
+      }, duration)
+    }, 500)
   }
   doTimer(func, time,) {
     clearTimeout(this.timer);
@@ -24,32 +39,40 @@ export default class Hole {
     }, time);
   }
   timer = null;
-  async doOut() {
+  async doOut(autoHide = true, idAniType = 0) {
     let configBasic = await ModelConfig.findOne({});
     clearTimeout(this.timer);
-    let list = await ModelAnimalType.find({});
-    let listTarget = [];
-    list.forEach(conf => {
-      for (let i = 0; i <= conf.power; i++) {
-        listTarget.push(conf.id);
-      }
-    })
-    let i = Util.getRandomInt(1, listTarget.length);
-    this.type = listTarget[i];
+    if (idAniType == 0) {
+      let list = await ModelAnimalType.find({});
+      let listTarget = [];
+      list.forEach(conf => {
+        for (let i = 0; i <= conf.power; i++) {
+          listTarget.push(conf.id);
+        }
+      })
+      let i = Util.getRandomInt(0, listTarget.length);
+      this.type = listTarget[i];
+    } else {
+      this.type = idAniType
+    }
     this.isOut = true;
     socketManager.sendMsgByUidList(this.roomCtr.uidList, PROTOCLE.SERVER.HOLE_UP, { type: this.type, idx: this.idx })
-    this.doTimer(() => {
-      this.doDown()
-    }, configBasic.TO);
+    if (autoHide) {
+      this.doTimer(() => {
+        this.doDown()
+      }, configBasic.TO);
+    }
   }
-  async doDown(reason = 0) {
+  async doDown(reason = 0, autoShow = true) {
     let configBasic = await ModelConfig.findOne({});
     clearTimeout(this.timer);
     this.isOut = false;
     socketManager.sendMsgByUidList(this.roomCtr.uidList, PROTOCLE.SERVER.HOLE_DOWN, { idx: this.idx, reason })
-    this.doTimer(() => {
-      this.doOut()
-    }, configBasic.PL * (1 + .5 * Math.random()))
+    if (autoShow) {
+      this.doTimer(() => {
+        this.doOut()
+      }, configBasic.PL * (1 + .5 * Math.random()))
+    }
   }
   async doClick(uid, confWeapon) {
     if (!this.isOut) {
