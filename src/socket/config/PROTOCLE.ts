@@ -18,6 +18,7 @@ export default class PROTOCLE {
     HOLE_UP: 'HOLE_UP',
     HOLE_DOWN: 'HOLE_DOWN',
     HIT_COST: 'HIT_COST',
-    HIT_RESULT: 'HIT_RESULT'
+    HIT_RESULT: 'HIT_RESULT',
+    CHAT: 'CHAT',
   };
 }

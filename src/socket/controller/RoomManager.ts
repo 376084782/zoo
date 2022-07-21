@@ -21,6 +21,10 @@ export default class RoomManager {
   userList = [];
   holeList: Hole[] = []
 
+  showChat(uid, conf) {
+    socketManager.sendMsgByUidList(this.uidList, 'CHAT', { uid, conf });
+
+  }
   constructor({ level }) {
     this.roomId = Util.getUniqId();
     this.level = level;

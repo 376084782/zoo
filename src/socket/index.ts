@@ -198,6 +198,13 @@ export default class socketManager {
         }
         break;
       }
+      case 'CHAT': {
+        if (!roomCtr) {
+          return;
+        }
+        roomCtr.showChat(uid, data.conf)
+        break
+      }
       case PROTOCLE.CLIENT.PING: {
         // 发回接收到的时间戳，计算ping
         this.sendMsgByUidList([uid], PROTOCLE.SERVER.PING, {
