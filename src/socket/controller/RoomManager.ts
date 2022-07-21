@@ -39,6 +39,9 @@ export default class RoomManager {
       // 用过的动物排除
       this.crazyTypeList.splice(i, 1)
       let confType = this.crazyTypeList[i];
+
+      socketManager.sendMsgByUidList(this.uidList, PROTOCLE.SERVER.SHOW_CRAZY, {
+      });
       this.holeList.forEach((hole: Hole) => {
         hole.doShowCrazy(configRoom.crazy_duration, confType.id)
       })

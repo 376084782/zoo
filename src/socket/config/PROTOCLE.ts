@@ -7,6 +7,7 @@ export default class PROTOCLE {
     HIT: 'HIT'
   };
   static SERVER = {
+    SHOW_CRAZY: 'SHOW_CRAZY',
     ERROR: "ERROR",
     PING: "PING",
     RECONNECT: "RECONNECT",
