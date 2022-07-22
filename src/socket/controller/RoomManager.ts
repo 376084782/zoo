@@ -34,6 +34,7 @@ export default class RoomManager {
   crazyTypeList = []
   async autoCrazy() {
     let configRoom = await ModelConfigRoom.findOne({ id: this.level });
+    console.log(configRoom.crazy_delay, 'configRoom.crazy_delayconfigRoom.crazy_delayconfigRoom.crazy_delay')
     setTimeout(async () => {
       if (this.crazyTypeList.length == 0) {
         let listTypeAll = await ModelAnimalType.find({});
