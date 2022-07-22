@@ -41,8 +41,8 @@ export default class RoomManager {
       }
       let i = Util.getRandomInt(0, this.crazyTypeList.length);
       // 用过的动物排除
-      this.crazyTypeList.splice(i, 1)
       let confType = this.crazyTypeList[i];
+      this.crazyTypeList.splice(i, 1)
 
       socketManager.sendMsgByUidList(this.uidList, PROTOCLE.SERVER.SHOW_CRAZY, {
       });
