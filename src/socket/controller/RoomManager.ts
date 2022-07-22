@@ -59,6 +59,7 @@ export default class RoomManager {
   async doClickHole(uid, typeAnimal, confWeapon) {
     let { P, RB, userInfo, diviseWeaponGainAndCost } = await Util.getConfig(uid, this.level, typeAnimal);
     let win = 0;
+    console.log('击打', P, typeAnimal, confWeapon)
     let flag = Math.random() < P;
     let configAnimal = await ModelAnimalType.findOne({ id: typeAnimal });
     let cost = Math.floor(confWeapon.mult * RB);

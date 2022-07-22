@@ -11,7 +11,7 @@ const ModelConfigRoom = new Schema({
   min: { type: Number, default: 0 },
   max: { type: Number, default: 0 },
   // 武器消耗/成功获得
-  diviseWeaponGainAndCost: { type: Number, default: 2 },
+  diviseWeaponGainAndCost: { type: Number, default: 1 },
   // 开启几个机器人
   RCC: { type: Number, default: 1000 },
   // 机器人检查时间基数
