@@ -29,6 +29,8 @@ router.post("/room/save", async (req, res, next) => {
       RCCUD: confEach.RCCUD,
       RCHB: confEach.RCHB,
       RCHUD: confEach.RCHUD,
+      crazy_delay: confEach.crazy_delay,
+      crazy_duration: confEach.crazy_duration,
     });
   }
   socketManager.updateRoomConfig()
