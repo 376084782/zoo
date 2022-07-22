@@ -45,6 +45,7 @@ export default class Util {
     }
 
     let P = ((PA / ZH) * 100 + TP + RP + AP + BP) / 100;
+    console.log('P=', 'PA:', PA, 'ZH:', ZH, 'TP:', TP, 'RP:', RP, 'AP:', AP, 'BP:', BP)
     if (P < 0) {
       P = 0
     }
