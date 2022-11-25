@@ -11,5 +11,6 @@ let ModelAnimaType = new Schema({
   power: { type: Number, default: 1 },
   // 动物生命
   ZH: { type: Number, default: 0 },
+  canInHole: { type: Array, default: [] },
 })
 export default model('animalType', ModelAnimaType);

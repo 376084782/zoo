@@ -13,6 +13,7 @@ export default class Hole {
   constructor() {
     this.initShow()
   }
+  crazyId = -1;
   initShow() {
     ModelConfig.findOne({}).then(configBasic => {
       this.doTimer(() => {
@@ -23,10 +24,12 @@ export default class Hole {
   doShowCrazy(duration, idAniType) {
     this.doDown(0, false);
     setTimeout(() => {
+      this.crazyId = idAniType;
       this.doOut(false, idAniType);
       setTimeout(() => {
         this.doDown(0, false);
         setTimeout(() => {
+          this.crazyId = -1;
           this.initShow()
         }, 500);
       }, duration)
@@ -40,10 +43,17 @@ export default class Hole {
   }
   timer = null;
   async doOut(autoHide = true, idAniType = 0) {
+    if (this.crazyId > -1) {
+      idAniType = this.crazyId;
+    }
     let configBasic = await ModelConfig.findOne({});
     clearTimeout(this.timer);
     if (idAniType == 0) {
-      let list = await ModelAnimalType.find({});
+      let list = await ModelAnimalType.find({
+        canInHole: {
+          $in: [this.idx]
+        }
+      });
       let listTarget = [];
       list.forEach(conf => {
         for (let i = 0; i <= conf.power; i++) {
@@ -71,7 +81,7 @@ export default class Hole {
     if (autoShow) {
       this.doTimer(() => {
         this.doOut()
-      }, configBasic.PL * (1 + .5 * Math.random()))
+      }, reason == 1 ? 1000 + Math.random() * 1000 : configBasic.PL * (1 + .5 * Math.random()))
     }
   }
   async doClick(uid, confWeapon) {
