@@ -34,7 +34,6 @@ export default class RoomManager {
   crazyTypeList = []
   async autoCrazy() {
     let configRoom = await ModelConfigRoom.findOne({ id: this.level });
-    console.log(configRoom.crazy_delay, 'configRoom.crazy_delayconfigRoom.crazy_delayconfigRoom.crazy_delay')
     setTimeout(async () => {
       if (this.crazyTypeList.length == 0) {
         let listTypeAll = await ModelAnimalType.find({});
@@ -46,10 +45,18 @@ export default class RoomManager {
       this.crazyTypeList.splice(i, 1)
 
       socketManager.sendMsgByUidList(this.uidList, PROTOCLE.SERVER.SHOW_CRAZY, {
+        flag: true
       });
       this.holeList.forEach((hole: Hole) => {
         hole.doShowCrazy(configRoom.crazy_duration, confType.id)
       })
+      setTimeout(() => {
+        // 结束疯狂时刻
+        socketManager.sendMsgByUidList(this.uidList, PROTOCLE.SERVER.SHOW_CRAZY, {
+          flag: false
+        });
+      }, configRoom.crazy_duration);
+      
       setTimeout(() => {
         this.autoCrazy()
       }, configRoom.crazy_duration + 1000);
